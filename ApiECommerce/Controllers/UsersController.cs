@@ -70,10 +70,12 @@ public class UsersController : ControllerBase
 
         return new ObjectResult(new
         {
-            access_token = jwt,
-            token_type = "bearer",
-            user_id = currentUser.Id,
-            user_name = currentUser.Name
+            accesstoken = jwt,
+            tokentype = "bearer",
+            userid = currentUser.Id,
+            username = currentUser.Name,
+            useremail = currentUser.Email,
+            userphone = currentUser.Phone
         });
     }
 
@@ -86,7 +88,7 @@ public class UsersController : ControllerBase
 
         if (user is null)
         {
-            return NotFound("Utilizador não encontrado");
+            return NotFound("User not found!");
         }
 
         if (image is not null)

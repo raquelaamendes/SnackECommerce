@@ -16,25 +16,25 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts(string tipoProduto, int? categoryId = null)
+    public async Task<IActionResult> GetProducts(string typeProduct, int? categoryId = null)
     {
         IEnumerable<Product> products;
 
-        if (tipoProduto == "categoria" && categoryId != null)
+        if (typeProduct == "category" && categoryId != null)
         {
             products = await _productRepository.GetProductsByCategoryAsync(categoryId.Value);
         }
-        else if (tipoProduto == "popular")
+        else if (typeProduct == "popular")
         {
             products = await _productRepository.GetPopularProductsAsync();
         }
-        else if (tipoProduto == "maisvendido")
+        else if (typeProduct == "bestseller")
         {
             products = await _productRepository.GetBestSellerProductsAsync();
         }
         else
         {
-            return BadRequest("Tipo de produto inválido");
+            return BadRequest("Invalid product type");
         }
 
         var productDetails = products.Select(v => new
@@ -63,7 +63,7 @@ public class ProductsController : ControllerBase
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
-            Detalhe = product.Details,
+            Details = product.Details,
             UrlImage = product.UrlImage
         };
 

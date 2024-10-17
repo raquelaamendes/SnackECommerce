@@ -140,7 +140,7 @@ public class ItemsShoppingCartController : ControllerBase
 
         if (user is null)
         {
-            return NotFound("Utilizador não encontrado."); 
+            return NotFound("User not found."); 
         }
 
         var itemShoppingCart = await dbContext.ItemsShoppingCart.FirstOrDefaultAsync(s =>
@@ -148,11 +148,11 @@ public class ItemsShoppingCartController : ControllerBase
 
         if (itemShoppingCart != null)
         {
-            if (action.ToLower() == "aumentar")
+            if (action.ToLower() == "increase")
             {
                 itemShoppingCart.Quantity += 1;
             }
-            else if (action.ToLower() == "diminuir")
+            else if (action.ToLower() == "decrease")
             {
                 if (itemShoppingCart.Quantity > 1)
                 {
@@ -165,7 +165,7 @@ public class ItemsShoppingCartController : ControllerBase
                     return Ok();
                 }
             }
-            else if (action.ToLower() == "deletar")
+            else if (action.ToLower() == "delete")
             {
                 // Remove o item do carrinho
                 dbContext.ItemsShoppingCart.Remove(itemShoppingCart);
@@ -174,16 +174,16 @@ public class ItemsShoppingCartController : ControllerBase
             }
             else
             {
-                return BadRequest("Ação Inválida. Use : 'aumentar', 'diminuir', ou 'deletar' para realizar uma ação");
+                return BadRequest("Invalid action. Use : 'increase', 'decrease', or 'delete'.");
             }
 
             itemShoppingCart.Total = itemShoppingCart.UnitPrice * itemShoppingCart.Quantity;
             await dbContext.SaveChangesAsync();
-            return Ok($"Operacao : {action} realizada com sucesso");
+            return Ok($"Success : {action} completed.");
         }
         else
         {
-            return NotFound("Nenhum item encontrado no carrinho");
+            return NotFound("No items on shopping cart.");
         }
     }
 }
