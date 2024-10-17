@@ -24,23 +24,40 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> OrderDetails(int orderId)
     {
-        var orderDetails = await (from orderDetail in dbContext.OrderDetails
-                                  join order in dbContext.Orders on orderDetail.OrderId equals order.Id
-                                  join product in dbContext.Products on orderDetail.ProductId equals product.Id
-                                  where orderDetail.OrderId == orderId
-                                  select new
-                                  {
-                                      Id = orderDetail.Id,
-                                      Quantity = orderDetail.Quantity,
-                                      SubTotal = orderDetail.Total,
-                                      ProductName = product.Name,
-                                      ProductImage = product.UrlImage,
-                                      ProductPrice = product.Price
-                                  }).ToListAsync();
+        //var orderDetails = await (from orderDetail in dbContext.OrderDetails
+        //                          join order in dbContext.Orders on orderDetail.OrderId equals order.Id
+        //                          join product in dbContext.Products on orderDetail.ProductId equals product.Id
+        //                          where orderDetail.OrderId == orderId
+        //                          select new
+        //                          {
+        //                              Id = orderDetail.Id,
+        //                              Quantity = orderDetail.Quantity,
+        //                              SubTotal = orderDetail.Total,
+        //                              ProductName = product.Name,
+        //                              ProductImage = product.UrlImage,
+        //                              ProductPrice = product.Price
+        //                          }).ToListAsync();
 
-        if (orderDetails == null || orderDetails.Count == 0)
+        var orderDetails = await dbContext.OrderDetails.AsNoTracking()
+                                    .Where(d => d.OrderId == orderId)
+                                    .Select(detailsOrder => new
+                                    {
+                                        Id = detailsOrder.Id,
+                                        Quantity = detailsOrder.Quantity,
+                                        SubTotal = detailsOrder.Total,
+                                        ProductName = detailsOrder.Product!.Name,
+                                        ProductImage = detailsOrder.Product.UrlImage,
+                                        ProductPrice = detailsOrder.Product.Price
+
+                                    }).ToListAsync();
+
+        //if (orderDetails == null || orderDetails.Count == 0)
+        //{
+        //    return NotFound("Detalhes do pedido não encontrados.");
+        //}
+        if (!orderDetails.Any())
         {
-            return NotFound("Detalhes do pedido não encontrados.");
+            return NotFound("Order details not found!");
         }
 
         return Ok(orderDetails);
@@ -54,20 +71,31 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> OrdersPerUser(int userId)
     {
-        var orders = await (from order in dbContext.Orders
-                            where order.UserId == userId
-                            orderby order.OrderDate descending
-                            select new
-                            {
-                                Id = order.Id,
-                                OrderTotal = order.Total,
-                                OrderDate = order.OrderDate,
-                            }).ToListAsync();
+        //var orders = await (from order in dbContext.Orders
+        //                    where order.UserId == userId
+        //                    orderby order.OrderDate descending
+        //                    select new
+        //                    {
+        //                        Id = order.Id,
+        //                        OrderTotal = order.Total,
+        //                        OrderDate = order.OrderDate,
+        //                    }).ToListAsync();
 
+
+
+        var orders = await dbContext.Orders.AsNoTracking()
+                        .Where(order => order.UserId == userId)
+                        .OrderByDescending(order => order.OrderDate)
+                        .Select(order => new
+                        {
+                            Id = order.Id,
+                            OrderTotal = order.Total,
+                            OrderDate = order.OrderDate
+                        }).ToListAsync();
 
         if (orders is null || orders.Count == 0)
         {
-            return NotFound("Não foram encontrados pedidos para o usuário especificado.");
+            return NotFound("Orders not found.");
         }
 
         return Ok(orders);
